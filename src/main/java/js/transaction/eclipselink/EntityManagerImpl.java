@@ -23,23 +23,28 @@ import js.log.Log;
 import js.log.LogFactory;
 import js.transaction.TransactionContext;
 
+/**
+ * Implementation for JPA entity manager injected into DAO classes by container.
+ * 
+ * @author Iulian Rotaru
+ */
 public class EntityManagerImpl implements EntityManager
 {
   /** Class logger. */
   private static final Log log = LogFactory.getLog(EntityManagerImpl.class);
 
   /** Transaction executed in current thread. Used to retrieve entity manager instance. */
-  private TransactionContext context;
+  private TransactionContext transactionContext;
 
   /**
    * Construct session manager instance and inject transaction context dependency.
    * 
-   * @param context transaction executed in current thread.
+   * @param transactionContext transaction executed in current thread.
    */
-  public EntityManagerImpl(TransactionContext context)
+  public EntityManagerImpl(TransactionContext transactionContext)
   {
     log.trace("SessionManagerImpl(TransactionContext)");
-    this.context = context;
+    this.transactionContext = transactionContext;
   }
 
   @Override
@@ -354,7 +359,7 @@ public class EntityManagerImpl implements EntityManager
 
   private EntityManager entityManager()
   {
-    EntityManager session = context.getSession();
+    EntityManager session = transactionContext.getSession();
     if(session == null) {
       throw new BugError("Attempt to get session object outside a transaction.");
     }

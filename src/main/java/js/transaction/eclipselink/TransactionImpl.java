@@ -6,13 +6,21 @@ import javax.persistence.EntityTransaction;
 import js.transaction.Transaction;
 import js.transaction.TransactionException;
 
+/**
+ * EclipseLink implementation for {@link Transaction} interface.
+ * 
+ * @author Iulian Rotaru
+ */
 public class TransactionImpl implements Transaction
 {
-  private final TransactionManagerImpl manager;
+  /** Reference to parent transaction manager used to auto-destroy this transaction. */
+  private final TransactionManagerImpl transactionManager;
 
-  private final EntityManager entity;
+  /** Reference to JPA entity manager used to create the underlying transaction, see {@link #transaction}. */
+  private final EntityManager entityManager;
 
-  private EntityTransaction transaction;
+  /** Underlying JPA transaction. */
+  private final EntityTransaction transaction;
 
   /**
    * Nesting level count used to allow for nesting transactions. {@link HibernateAdapter#createTransaction(boolean)}
@@ -30,24 +38,35 @@ public class TransactionImpl implements Transaction
   /** Flag indicating that transaction was closes and is not longer legal to operate on it. */
   private boolean closed = false;
 
-  public TransactionImpl(TransactionManagerImpl manager, boolean readOnly)
+  /**
+   * Create transaction instance. If this transaction is not read only create the underlying JPA transaction. Otherwise
+   * {@link #transaction} field remains null.
+   * 
+   * @param transactionManager parent transaction manager,
+   * @param entityManager JPA entity manager,
+   * @param readOnly flag true if need to create read only transaction.
+   */
+  public TransactionImpl(TransactionManagerImpl transactionManager, EntityManager entityManager, boolean readOnly)
   {
-    this.manager = manager;
-    this.entity = manager.getEntityManager();
+    this.transactionManager = transactionManager;
+    this.entityManager = entityManager;
     this.readOnly = readOnly;
 
     // do not create transaction boundaries if session is read-only
     if(!readOnly) {
       try {
-        this.transaction = this.entity.getTransaction();
+        this.transaction = this.entityManager.getTransaction();
         this.transaction.begin();
       }
       catch(Exception e) {
-        if(this.entity.isOpen()) {
-          this.entity.close();
+        if(this.entityManager.isOpen()) {
+          this.entityManager.close();
         }
         throw new TransactionException(e);
       }
+    }
+    else {
+      this.transaction = null;
     }
   }
 
@@ -81,7 +100,7 @@ public class TransactionImpl implements Transaction
       throw new IllegalStateException("Read-only transaction does not allow rollback.");
     }
     try {
-      if(entity.isOpen()) {
+      if(entityManager.isOpen()) {
         transaction.rollback();
       }
     }
@@ -105,13 +124,13 @@ public class TransactionImpl implements Transaction
     closed = true;
 
     try {
-      entity.close();
+      entityManager.close();
     }
     catch(Exception e) {
       throw new TransactionException(e);
     }
     finally {
-      manager.destroyTransaction();
+      transactionManager.destroyTransaction();
     }
     return true;
   }
@@ -127,10 +146,10 @@ public class TransactionImpl implements Transaction
   public <T> T getSession()
   {
     if(closed) {
-      throw new IllegalStateException("Closed Hibernate session.");
+      throw new IllegalStateException("Closed JPA entity manager.");
     }
     unused = false;
-    return (T)entity;
+    return (T)entityManager;
   }
 
   /**

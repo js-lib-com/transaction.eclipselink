@@ -15,22 +15,32 @@ import js.transaction.TransactionFactory;
 import js.transaction.TransactionManager;
 import js.util.Classes;
 
+/**
+ * EclipseLink implementation for {@link Transactionfactory} interface.
+ * 
+ * @author Iulian Rotaru
+ */
 public class TransactionFactoryImpl implements TransactionFactory, TransactionContext
 {
+  /** Class logger. */
   private static final Log log = LogFactory.getLog(TransactionFactoryImpl.class);
 
+  /**
+   * Persistence unit name used by default constructor. This factory is used to create transactional instances outside
+   * container. Since it is used mainly on testing, default name is 'test'.
+   */
   private static final String DEF_PERSISTENCE_UNIT_NAME = "test";
 
-  private final TransactionManager manager;
+  /** Transaction manager instance is created by this factory constructor based on provided persistence unit name. */
+  private final TransactionManager transactionManager;
+
+  /** Entity manager of the transaction executed on current thread. */
   private final ThreadLocal<Object> sessionStorage = new ThreadLocal<>();
 
-  /**
-   * Convenient constructor using default persistence unit name, <code>test</code>.
-   */
+  /** Convenient constructor using default persistence unit name, {@link #DEF_PERSISTENCE_UNIT_NAME}. */
   public TransactionFactoryImpl()
   {
-    log.trace("TransactionFactoryImpl()");
-    manager = new TransactionManagerImpl(DEF_PERSISTENCE_UNIT_NAME);
+    this(DEF_PERSISTENCE_UNIT_NAME);
   }
 
   /**
@@ -41,7 +51,7 @@ public class TransactionFactoryImpl implements TransactionFactory, TransactionCo
   public TransactionFactoryImpl(String persistenceUnitName)
   {
     log.trace("TransactionFactoryImpl(String)");
-    manager = new TransactionManagerImpl(persistenceUnitName);
+    this.transactionManager = new TransactionManagerImpl(persistenceUnitName);
   }
 
   @SuppressWarnings("unchecked")
@@ -64,13 +74,11 @@ public class TransactionFactoryImpl implements TransactionFactory, TransactionCo
   }
 
   // ----------------------------------------------------------------------------------------------
-  // INNER CLASSES
 
   /**
-   * Java invocation handler for transactional Proxy. Executes every method in transaction boundaries.
+   * Java invocation handler for transactional proxy. Executes every method in transaction boundaries.
    * 
    * @author Iulian Rotaru
-   * @version draft
    */
   private class TransactionalProxy implements InvocationHandler
   {
@@ -79,6 +87,7 @@ public class TransactionFactoryImpl implements TransactionFactory, TransactionCo
 
     public TransactionalProxy(Object instance)
     {
+      log.trace("TransactionalProxy(Object)");
       this.instance = instance;
 
       Annotation annotation = instance.getClass().getAnnotation(Immutable.class);
@@ -102,7 +111,7 @@ public class TransactionFactoryImpl implements TransactionFactory, TransactionCo
         immutableMethod = false;
       }
 
-      Transaction transaction = immutableMethod ? manager.createReadOnlyTransaction() : manager.createTransaction();
+      Transaction transaction = immutableMethod ? transactionManager.createReadOnlyTransaction(null) : transactionManager.createTransaction(null);
       sessionStorage.set(transaction.getSession());
 
       try {
