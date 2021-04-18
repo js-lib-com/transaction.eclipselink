@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.js-lib</groupId>
 	<artifactId>js-eclipselink</artifactId>
-	<version>1.1.1</version>
+	<version>1.1.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>EclipseLink Implementation of j(s)-lib Transaction API</name>
@@ -32,6 +32,36 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.13.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.js-lib</groupId>
+			<artifactId>js-transaction-api</artifactId>
+			<version>1.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.persistence</groupId>
+			<artifactId>eclipselink</artifactId>
+			<version>2.7.6</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.eclipse.persistence</groupId>
+					<artifactId>javax.persistence</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.persistence</groupId>
+			<artifactId>javax.persistence</artifactId>
+			<version>2.1.1</version>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<plugins>
@@ -116,40 +146,23 @@
 		</profile>
 	</profiles>
 
-	<dependencies>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.13.1</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.js-lib</groupId>
-			<artifactId>js-transaction-api</artifactId>
-			<version>1.2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.persistence</groupId>
-			<artifactId>eclipselink</artifactId>
-			<version>2.7.6</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.eclipse.persistence</groupId>
-					<artifactId>javax.persistence</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.persistence</groupId>
-			<artifactId>javax.persistence</artifactId>
-			<version>2.1.1</version>
-		</dependency>
-	</dependencies>
+	<repositories>
+		<repository>
+			<id>js-lib</id>
+			<url>http://maven.js-lib.com/</url>
+		</repository>
+	</repositories>
+	<pluginRepositories>
+		<pluginRepository>
+			<id>js-lib</id>
+			<url>http://maven.js-lib.com/</url>
+		</pluginRepository>
+	</pluginRepositories>
 
 	<distributionManagement>
 		<snapshotRepository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+			<id>js-lib</id>
+			<url>http://maven.js-lib.com/</url>
 		</snapshotRepository>
 		<repository>
 			<id>ossrh</id>
