@@ -35,7 +35,7 @@ public class TransactionFactoryImpl implements TransactionFactory, TransactionCo
   private final TransactionManager transactionManager;
 
   /** Entity manager of the transaction executed on current thread. */
-  private final ThreadLocal<Object> sessionStorage = new ThreadLocal<>();
+  private final ThreadLocal<Object> entityManagerStorage = new ThreadLocal<>();
 
   /** Convenient constructor using default persistence unit name, {@link #DEF_PERSISTENCE_UNIT_NAME}. */
   public TransactionFactoryImpl()
@@ -68,9 +68,9 @@ public class TransactionFactoryImpl implements TransactionFactory, TransactionCo
 
   @SuppressWarnings("unchecked")
   @Override
-  public <T> T getSession()
+  public <T> T getResourceManager()
   {
-    return (T)sessionStorage.get();
+    return (T)entityManagerStorage.get();
   }
 
   // ----------------------------------------------------------------------------------------------
@@ -112,7 +112,7 @@ public class TransactionFactoryImpl implements TransactionFactory, TransactionCo
       }
 
       Transaction transaction = immutableMethod ? transactionManager.createReadOnlyTransaction(null) : transactionManager.createTransaction(null);
-      sessionStorage.set(transaction.getSession());
+      entityManagerStorage.set(transaction.getResourceManager());
 
       try {
         Object value = method.invoke(instance, args);
@@ -129,7 +129,7 @@ public class TransactionFactoryImpl implements TransactionFactory, TransactionCo
       }
       finally {
         transaction.close();
-        sessionStorage.remove();
+        entityManagerStorage.remove();
       }
     }
 

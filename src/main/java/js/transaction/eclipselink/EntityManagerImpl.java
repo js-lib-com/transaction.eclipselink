@@ -359,10 +359,10 @@ public class EntityManagerImpl implements EntityManager
 
   private EntityManager entityManager()
   {
-    EntityManager session = transactionContext.getSession();
-    if(session == null) {
-      throw new BugError("Attempt to get session object outside a transaction.");
+    EntityManager entityManager = transactionContext.getResourceManager();
+    if(entityManager == null) {
+      throw new BugError("Attempt to get entity manager instance outside a transaction.");
     }
-    return session;
+    return entityManager;
   }
 }

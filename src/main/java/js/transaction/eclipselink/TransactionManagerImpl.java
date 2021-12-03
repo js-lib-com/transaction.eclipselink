@@ -62,7 +62,7 @@ import js.util.Strings;
 public class TransactionManagerImpl implements TransactionManager
 {
   /** Class logger. */
-  private static final Log log = LogFactory.getLog(TransactionFactoryImpl.class);
+  private static final Log log = LogFactory.getLog(TransactionManagerImpl.class);
 
   /** String pattern for persistence unit name. */
   private static final String PUNAME_MARK = "name=\"";
@@ -92,7 +92,7 @@ public class TransactionManagerImpl implements TransactionManager
   }
 
   /**
-   * Constructor used when transaction manager instance is created by {@link TransactionFactoryImpl}. Named persistence
+   * Constructor used when transaction manager instance is created by {@link TransactionContext}. Named persistence
    * unit name should exist into persistence configuration file.
    * 
    * @param persistenceUnitName persistence unit name.
@@ -138,7 +138,7 @@ public class TransactionManagerImpl implements TransactionManager
     Transaction t = createTransaction(persistenceUnitName);
     T o = null;
     try {
-      o = (T)workingUnit.exec((S)t.getSession(), args);
+      o = (T)workingUnit.exec((S)t.getResourceManager(), args);
       t.commit();
     }
     catch(Exception e) {
