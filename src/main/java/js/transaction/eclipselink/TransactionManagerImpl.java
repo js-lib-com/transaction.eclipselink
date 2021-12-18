@@ -8,8 +8,6 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
 import js.lang.BugError;
-import js.lang.Config;
-import js.lang.ConfigException;
 import js.log.Log;
 import js.log.LogFactory;
 import js.transaction.Transaction;
@@ -23,19 +21,19 @@ import js.util.Strings;
  * EclipseLink implementation for {@link TransactionManager} interface. Beside what is already stated on interface API,
  * note that 'transactional schema' supplied to transaction creation factory methods is named here 'persistence unit'.
  * Also persistence unit should be declared on persistence configuration file, '/META-INF/persistence.xml'.
- * <p>
+ * 
  * This transaction manager implements support for multiple database schemas. Below is a piece of ASCII art depicting
  * components interaction.
- * <p>
- * User space Dao class methods are executed, after transaction creation, by ManagedProxyHandler from container. Dao
+ * 
+ * Application Dao class methods are executed, after transaction creation, by transaction service from container. Dao
  * class is annotated with schema name. This schema name is detected by container and passed to transaction manager,
  * EclipseLink implementation - this class. Based on schema name, that in our case is actually persistence unit name, an
  * EntityManagerFactory is selected. Factories map is updated on the fly.
  * 
  * <pre>
- *       User Space Code
+ *       Application
  *       +---------------------------------------+
- * +-----+-Transactional(schema)                 |
+ * +-----+-@Transactional(schema)                |
  * |     | class Dao {                           |
  * |     |    private final EntityManager em;    |
  * |     |    ...                                |
@@ -45,7 +43,7 @@ import js.util.Strings;
  * |  |  
  * |  |  Container                                                      EclipseLink j(s)lib transaction implementation    
  * |  |  +--------------------------------------------------------+     +--------------------------------------------------------+
- * |  |  | class ManagedProxyHandler {                            |     | class TransactionManagerImpl {                         | 
+ * |  |  | class TransactionService {                             |     | class TransactionManagerImpl {                         | 
  * |  |  |    invoke(proxy) {                                     |     |       Map<String, EntityManagerFactory> factories;     |
  * |  |  |       ...                                              |     |                                                        | 
  * +--)--+-----> transactionManager.createTransaction(schema); ---+-----+-----> createTransaction(schema) {                      |
@@ -61,56 +59,25 @@ import js.util.Strings;
  */
 public class TransactionManagerImpl implements TransactionManager
 {
-  /** Class logger. */
   private static final Log log = LogFactory.getLog(TransactionManagerImpl.class);
 
-  /** String pattern for persistence unit name. */
-  private static final String PUNAME_MARK = "name=\"";
+  /**
+   * By convention default persistence unit name is the first persistence unit declared in '/META-INF/persistence.xml'
+   * file.
+   */
+  private final String defaultPersistenceUnitName;
 
-  /** Keep current on working transaction on thread local variable. */
+  /** Keep on working transaction on thread local variable. */
   private final ThreadLocal<TransactionImpl> transactionsCache = new ThreadLocal<>();
 
-  /**
-   * By convention default persistence unit name is the first persistence unit declared in configuration file.
-   */
-  private String defaultPersistenceUnitName;
-
-  /**
-   * EntiTy manager factories, mapped per their persistence unit name. Default factory is initialized by
-   * {@link #config(Config)} method with first persistence unit from configuration file. The other factories, if any are
-   * declared on user space DAO classes, are added on the fly.
-   */
+  /** Cache for entity manager factories, mapped per their persistence unit name. It is loaded on the fly. */
   private final Map<String, EntityManagerFactory> factories = new HashMap<>();
 
-  /**
-   * Constructor used when transaction manager is instantiated by container. This constructor does nothing. Instance is
-   * completely initialized after {@link #config(Config)}.
-   */
+  /** Initialize default persistence unit name, see {@link #getFirstPersistenceUnitName()}. */
   public TransactionManagerImpl()
   {
     log.trace("TransactionManagerImpl()");
-  }
-
-  /**
-   * Constructor used when transaction manager instance is created by {@link TransactionContext}. Named persistence
-   * unit name should exist into persistence configuration file.
-   * 
-   * @param persistenceUnitName persistence unit name.
-   */
-  public TransactionManagerImpl(String persistenceUnitName)
-  {
-    log.trace("TransactionManagerImpl(String)");
-    defaultPersistenceUnitName = persistenceUnitName;
-    factories.put(persistenceUnitName, Persistence.createEntityManagerFactory(persistenceUnitName));
-  }
-
-  @Override
-  public void config(Config config) throws ConfigException
-  {
-    log.trace("config(Config)");
-    // by convention persistence unit name is the schema name
-    defaultPersistenceUnitName = getFirstPersistenceUnitName();
-    factories.put(defaultPersistenceUnitName, Persistence.createEntityManagerFactory(defaultPersistenceUnitName));
+    this.defaultPersistenceUnitName = getFirstPersistenceUnitName();
   }
 
   @Override
@@ -128,7 +95,7 @@ public class TransactionManagerImpl implements TransactionManager
   /** Remove transaction from transactions cache. */
   void destroyTransaction()
   {
-    transactionsCache.set(null);
+    transactionsCache.remove();
   }
 
   @SuppressWarnings("unchecked")
@@ -161,11 +128,23 @@ public class TransactionManagerImpl implements TransactionManager
   public void destroy()
   {
     log.trace("destroy()");
-    for(EntityManagerFactory factory : factories.values()) {
+    factories.forEach((unitName, factory) -> {
+      log.debug("Close entity manager factory for pesistence unit |%s|.", unitName);
       factory.close();
-    }
+    });
   }
 
+  /**
+   * Create a transaction using the entity manager for requested persistence unit. Persistence unit is identified by
+   * given persistence unit name; if null, uses {@link #defaultPersistenceUnitName}.
+   * 
+   * This method uses entity manager factory loaded from {@link #factories} cache; on cache miss create entity manager
+   * factory on the fly.
+   * 
+   * @param persistenceUnitName persistence unit name or null if to use the default name,
+   * @param readOnly flag true for read only transaction.
+   * @return transaction implementation.
+   */
   private TransactionImpl createTransaction(String persistenceUnitName, boolean readOnly)
   {
     TransactionImpl transaction = transactionsCache.get();
@@ -192,6 +171,16 @@ public class TransactionManagerImpl implements TransactionManager
 
   // ----------------------------------------------------------------------------------------------
 
+  /** String pattern for persistence unit name. */
+  private static final String PUNAME_MARK = "name=\"";
+
+  /**
+   * Scan persistence configuration file - '/META-INF/persistence.xml', for first persistence unit declaration and
+   * return its name. Throws bug error if persistence configuration is missing or not well formed.
+   * 
+   * @return name of the first persistence unit, never null.
+   * @throws BugError if persistence configuration is missing or not well formed.
+   */
   private static String getFirstPersistenceUnitName()
   {
     String persistence = null;
