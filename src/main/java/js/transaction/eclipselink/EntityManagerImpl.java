@@ -34,7 +34,7 @@ public class EntityManagerImpl implements EntityManager
   private static final Log log = LogFactory.getLog(EntityManagerImpl.class);
 
   /** Transaction executed in current thread. Used to retrieve entity manager instance. */
-  private TransactionContext transactionContext;
+  private final TransactionContext transactionContext;
 
   /**
    * Construct session manager instance and inject transaction context dependency.
