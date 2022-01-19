@@ -18,6 +18,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.CriteriaUpdate;
 import javax.persistence.metamodel.Metamodel;
 
+import jakarta.inject.Inject;
 import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;
@@ -41,6 +42,7 @@ public class EntityManagerImpl implements EntityManager
    * 
    * @param transactionContext transaction executed in current thread.
    */
+  @Inject
   public EntityManagerImpl(TransactionContext transactionContext)
   {
     log.trace("SessionManagerImpl(TransactionContext)");
