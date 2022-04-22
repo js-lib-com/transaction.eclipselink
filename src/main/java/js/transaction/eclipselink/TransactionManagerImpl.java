@@ -4,9 +4,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Persistence;
 import js.lang.BugError;
 import js.log.Log;
 import js.log.LogFactory;

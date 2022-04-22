@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.js-lib</groupId>
 	<artifactId>js-eclipselink</artifactId>
-	<version>1.1.1</version>
+	<version>1.1.2</version>
 	<packaging>jar</packaging>
 
 	<name>EclipseLink Implementation of j(s)-lib Transaction API</name>
@@ -42,18 +42,12 @@
 		<dependency>
 			<groupId>com.js-lib</groupId>
 			<artifactId>js-jee-api</artifactId>
-			<version>1.0</version>
+			<version>1.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.persistence</groupId>
 			<artifactId>eclipselink</artifactId>
-			<version>2.7.6</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.eclipse.persistence</groupId>
-					<artifactId>javax.persistence</artifactId>
-				</exclusion>
-			</exclusions>
+			<version>3.1.0-M1</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>

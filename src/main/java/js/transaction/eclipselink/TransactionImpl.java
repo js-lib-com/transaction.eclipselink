@@ -1,8 +1,7 @@
 package js.transaction.eclipselink;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
-
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
 import js.transaction.Transaction;
 import js.transaction.TransactionException;
 
