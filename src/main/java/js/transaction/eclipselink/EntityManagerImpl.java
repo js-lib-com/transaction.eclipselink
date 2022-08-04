@@ -3,6 +3,9 @@ package js.transaction.eclipselink;
 import java.util.List;
 import java.util.Map;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityGraph;
 import jakarta.persistence.EntityManager;
@@ -19,8 +22,6 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.CriteriaUpdate;
 import jakarta.persistence.metamodel.Metamodel;
 import js.lang.BugError;
-import js.log.Log;
-import js.log.LogFactory;
 import js.transaction.TransactionContext;
 
 /**

@@ -4,11 +4,12 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.jslib.api.log.Log;
+import com.jslib.api.log.LogFactory;
+
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 import js.lang.BugError;
-import js.log.Log;
-import js.log.LogFactory;
 import js.transaction.Transaction;
 import js.transaction.TransactionException;
 import js.transaction.TransactionManager;
