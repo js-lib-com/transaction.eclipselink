@@ -1,9 +1,10 @@
-package js.transaction.eclipselink;
+package com.jslib.transaction.eclipselink;
+
+import com.jslib.api.transaction.Transaction;
+import com.jslib.api.transaction.TransactionException;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
-import js.transaction.Transaction;
-import js.transaction.TransactionException;
 
 /**
  * EclipseLink implementation for {@link Transaction} interface.

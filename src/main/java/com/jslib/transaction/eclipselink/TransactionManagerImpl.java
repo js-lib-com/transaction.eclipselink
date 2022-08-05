@@ -1,4 +1,4 @@
-package js.transaction.eclipselink;
+package com.jslib.transaction.eclipselink;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -6,16 +6,16 @@ import java.util.Map;
 
 import com.jslib.api.log.Log;
 import com.jslib.api.log.LogFactory;
+import com.jslib.api.transaction.Transaction;
+import com.jslib.api.transaction.TransactionException;
+import com.jslib.api.transaction.TransactionManager;
+import com.jslib.api.transaction.WorkingUnit;
+import com.jslib.lang.BugError;
+import com.jslib.util.Classes;
+import com.jslib.util.Strings;
 
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
-import js.lang.BugError;
-import js.transaction.Transaction;
-import js.transaction.TransactionException;
-import js.transaction.TransactionManager;
-import js.transaction.WorkingUnit;
-import js.util.Classes;
-import js.util.Strings;
 
 /**
  * EclipseLink implementation for {@link TransactionManager} interface. Beside what is already stated on interface API,

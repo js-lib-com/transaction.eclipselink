@@ -1,10 +1,12 @@
-package js.transaction.eclipselink;
+package com.jslib.transaction.eclipselink;
 
 import java.util.List;
 import java.util.Map;
 
 import com.jslib.api.log.Log;
 import com.jslib.api.log.LogFactory;
+import com.jslib.api.transaction.TransactionContext;
+import com.jslib.lang.BugError;
 
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityGraph;
@@ -21,8 +23,6 @@ import jakarta.persistence.criteria.CriteriaDelete;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.CriteriaUpdate;
 import jakarta.persistence.metamodel.Metamodel;
-import js.lang.BugError;
-import js.transaction.TransactionContext;
 
 /**
  * Implementation for JPA entity manager injected into DAO classes by container.
