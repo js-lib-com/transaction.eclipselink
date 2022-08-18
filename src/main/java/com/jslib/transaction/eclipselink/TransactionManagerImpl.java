@@ -129,7 +129,7 @@ public class TransactionManagerImpl implements TransactionManager
   {
     log.trace("destroy()");
     factories.forEach((unitName, factory) -> {
-      log.debug("Close entity manager factory for pesistence unit |%s|.", unitName);
+      log.debug("Close entity manager factory for pesistence unit |{jpa_unit}|.", unitName);
       factory.close();
     });
   }
